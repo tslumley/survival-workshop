@@ -1,0 +1,283 @@
+---
+title: "Time-to-event analysis"
+author: "Thomas Lumley"
+date: "2017-9-12"
+output: ioslides_presentation
+---
+```{r echo=FALSE}
+library(survival)
+```
+
+## The fundamental problem
+
+We are often interested in the time until some event happens
+
+- death
+- death from heart disease
+- graduation
+- getting a job
+- HIV infection
+- diabetes diagnosis
+
+When we analyse the data, the event still hasn't happened for some people, or it has but we don't know about it.
+
+
+## Introductions
+
+Me: 
+
+- Biostatistics
+
+## Course content
+
+
+- Concepts: censoring, truncation, competing risks, choice of time scale
+- Summaries: the Kaplan--Meier curve; mean, median, and proportion surviving; the hazard rate; graphical exploration
+- Two-sample testing: the logrank test and its strengths and weaknesses
+- The proportional  hazards model: right censoring, left truncation,
+- Time-varying predictors
+- Modelling recurrent events
+- (briefly) parametric accelerated-failure models
+- (briefly) Interval censoring
+- (briefly) Case-cohort and countermatched designs
+
+## Course structure
+
+Four 1.5 hour blocks each day
+
+Mostly: 
+
+- 45 min lecture
+- 30 min practical
+- 15 min discussion
+
+## Software
+
+I speak R and some Stata
+
+Yannan speaks SAS
+
+Everything we talk about can be done in R, most of it can be done in SAS or Stata. 
+
+We can try to help you with SPSS or other software. 
+
+## Questions?
+
+<img src="weka_hires.jpg" height=500">
+
+## The basic case: right censoring
+
+How long do people survive after surgery for colon cancer with three treatment regimens?
+
+- time starts at surgery
+- time ends when someone dies
+- they might still be alive when we do the analysis
+
+## Notation: 
+
+- $X$: 'True' survival time 
+- $C$: follow-up time -- ie, time until data lock for analysis
+- $T$: observed time = $\min(X, C)$
+- $\Delta$: Event indicator: $\Delta=1$ if you died at $T$, $\Delta=0$ if you were alive at $T$
+
+
+We say the time is **right censored** at $T$ for people still alive
+
+- *censored*: the time of death still exists, we just don't get to see it
+- *right*: time flowing from left to right; it's the right-hand end we don't see
+
+## Analyses
+
+- **Just look at $\Delta$**: loses information. Biased if $C$ is different by treatment
+- **Just look at $X$**: loses information. Biased if $C$ is different by treatment
+
+We need to look at both. Two questions:
+
+- what do we want to do?
+- how do we tell the computer to do it?
+
+## Discussion
+
+How are...
+
+- death from heart disease
+- graduation
+- getting a job
+- HIV infection
+- diabetes diagnosis
+
+...more complicated when defining time-to-event?
+
+**Pick a couple and talk to the person next to you for 2 minutes**
+
+## Back to the basic case
+
+Want to estimate survival function $S(t)= P(X\geq t)$
+
+But we **don't know** if $X_i\geq t$ when $t$ is after the censoring time.
+
+Three approaches...
+
+- small intervals
+- imputation
+- maximum likelihood
+
+... all give the same result.
+
+## Data example
+
+Survival from diagnosis of primary biliary cirrhosis
+
+- rare liver disease
+- not (at the time) treatable
+- data from before transplants were routine
+- follow-up ranging from two to 13 years.
+
+## Discrete time
+
+Round the times to each 5 years
+
+- compute proportion dying for each point: deaths/number under observation
+- compute $S(t)$ by multiplying $1-P(\textrm{dying})$ for each time point up to $t$
+
+Biased: the denominator actually changes over the 5 years
+
+What happens as the time intervals get shorter?
+
+## Example
+
+
+
+## Shorter intervals
+
+- Estimate of $P(\textrm{dying})$ in an interval gets noisy for short intervals
+- Bias decreases
+- Cumulative survival **doesn't** get noisier (proportions kinda sorta independent)
+- Can take intervals all the way down to single events!
+
+Kaplan-Meier estimator
+
+$$\hat{S}(t) = \prod_{s\leq t} \left(1-\frac{\textrm{deaths at }s}{\textrm{alive before }s}\right)$$
+
+## Imputation
+
+- Start off with $1/n$ probability at each time point
+- Moving through time, when you get to a censored time, spread its probability evenly over all future time points
+
+Ends up with Kaplan--Meier estimator
+
+## Example
+
+## Maximum likelihood
+
+What $\hat S()$ makes the likelihood of the data set highest?
+
+- deaths only at observed death times
+- If $\Delta=1$, contribution is size of step (predicted proportion dying) at $t_i$ 
+- If $\Delta=0$, contribution is total of *future* step sizes
+
+Choosing the step sizes to maximise the likelihood also gives the Kaplan-Meier estimator
+
+## Summaries
+
+- The whole curve $\hat{S}(t)$
+- The median (where $\hat{S}(t)=0.5$) and other quantiles
+- Survival at particular times (eg, five years, one year, 30 days)
+- The **restricted** mean: area under the $\hat{S}(t)$ curve up to some time limit (eg five years)
+
+## Hazard
+
+Rate at which events are happening (eg %/year)
+
+- Average rate over time:  $(\sum_i \Delta_i)/(\sum_i T_i)$, eg 161 deaths in 2196 person-years of followup gives 7%/year death rate
+- As a function of time: is it going up or down? What is the rate at 1 year?
+
+## Example:PBC
+
+```{r echo=FALSE}
+library(muhaz)
+with(pbc, plot(muhaz(time/365, status==2)))
+```
+
+## Cumulative Hazard
+
+$H(t)$ or $\Lambda(t)$
+
+- adding up the hazard over time
+- expected number of deaths if people didn't go away when they died
+- also $H(t)=-\log S(t)$
+
+Estimator: (Nelson-Aalen)
+
+$$\hat\Lambda(t) = \sum_{s<t} \frac{\textrm{deaths at }s}{\textrm{alive before }s}$$
+
+If you know logarithms, show: $\hat\Lambda(t)\approx -\log \hat S(t)$
+
+## Censoring assumptions
+
+Basic assumption: the probability of dying at time $t$ is the same for someone censored before $t$ as for someone being observed at $t$.
+
+In regression models, can weaken this to: the probability of dying at time $t$ is the same for someone censored before $t$ as for someone being observed at $t$ who has the same covariate values.
+
+Formal name: **Non-informative censoring** or **Ignorable Censoring** or **Censoring At Random**
+
+It is **impossible** to estimate $\hat{S}(t)$ without making this assumption.
+
+You **cannot** test this assumption using the data. 
+
+
+## Questions?
+
+<img src="weka_hires.jpg" height=500">
+
+## Common two-sample comparisons
+
+- Median survival
+- **% surviving five years** (say)
+- restricted mean survival
+- **hazard rates**
+
+## 
+
+## The logrank test
+
+
+
+
+
+## More notation
+
+- $N_i(t)$ number of times person $i$ has died by time $t$
+- $dN_i(t)$ number of times person $i$ dies at exactly time $t$
+- $\bar N(t)$ total number of deaths observed by time $t$
+- $Y_i(t)$ is person $i$ under observation at time $t$?
+- $\bar Y(t)$ total number of people under observation at time $t$
+
+For right-censored survival data
+
+- $N_i(t)=0$ before $T_i$. After $T_i$, $N_i(t)=\Delta_i$
+- $Y_i(t)=1$ until $T_i$, then $Y_i(t)=0$
+
+Looks like pointless complication
+
+## Two reasons
+
+Allows for more complicated processes, eg:
+
+- asthma attacks: $N_i=0,1,2,3,\dots,\textrm{many}$
+- getting a job: $Y_i(t)=1$ only while you're looking for a job
+
+Allows some advanced probability theory to be used in proofs
+
+- 'kinda sorta independent' means 'martingale'
+- martingales behave a lot like sums of independent things.
+
+
+## Notation for sums
+
+$$\hat\Lambda(t) = \int_0^t \frac{d\bar N(s)}{\bar Y(s)}$$
+
+It just means
+$$\hat\Lambda(t) = \sum_{s\leq t} \frac{\textrm{deaths at }s}{\textrm{alive before }s}$$
+
+
