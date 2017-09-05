@@ -337,9 +337,9 @@ $$\widehat{\mathrm{var}}[\hat{\Lambda}(t)]=\sum_{s\leq t} \frac{\textrm{deaths a
 
 Not **really** independent, but it **is** valid
 
-So, we can get $\widehat{\mathrm{var}}[\hat{S}(t)]$ from the $S(t)=\exp( -\Lambda(t))$ relationship, and compare $\hat{S}$ between groups.
+So, we can get $\widehat{\mathrm{var}}[\hat{S}(t)]$ from the $S(t)=\exp( -\Lambda(t))$ relationship, and compare $\hat{S}(t)$ between groups.
 
-
+Or, work on the log scale and compare $\hat{\Lambda}(t)$ between groups: better small-sample behaviour
 
 
 
@@ -409,3 +409,122 @@ Comparing two groups
 
 <img src="weka_hires.jpg" height=500">
 
+---
+
+Lunch: 
+
+## Regression models
+
+- The Cox model
+- accelerated failure models
+
+## The proportional hazards model
+
+$S(t)$ has upper and lower limits, but $\log \Lambda(t)$ or $\log\lambda(t)$ don't
+
+A simple regression model for rate of death at a given time
+$$\log \lambda(t;z) = \log\lambda_0(t)+z\beta$$
+
+$\beta$ are log hazard ratios: $e^\beta$ is the ratio of hazards for two people with 1-unit difference in $z$.  The model says this ratio is constant over time. 
+
+$\lambda_0(t)$ is the hazard at time $t$ for someone with $z=0$.
+
+## The Cox model
+
+We could choose a form for $\lambda_0(t)$, eg constant or a power of $t$.
+
+David Cox observed that we don't have to: we can estimate $\beta$ **without** estimating $\lambda_0$
+
+Suppose someone dies at time. The probability it's person $i$ is 
+$$p(\beta)= \frac{\lambda(t;z_i)}{\sum_{\textrm{alive at } t}\lambda(t;z_j)}=\frac{\lambda_0(t)e^{z_i\beta}}{\sum_{\textrm{alive at } t} \lambda_0(t)e^{z_j\beta}}=\frac{e^{z_i\beta}}{\sum_{\textrm{alive at } t} e^{z_j\beta}}$$
+
+Multiplying these over all times where a death occurs gives something like a likelihood: the Cox partial likelihood.
+
+## Digression: partial likelihood
+
+Subsequent research shows
+
+- The partial likelihood behaves exactly like a likelihood: estimation, testing, etc
+- You can't get a more precise estimator without making assumptions about $\lambda_0(t)$
+- Even making assumptions doesn't gain you much
+
+There are basically **no other** examples of a fully efficient estimator that ignores an infinite-dimensional parameter. 
+
+## Implications
+
+Partial likelihood compares individuals **at the same time**
+
+- no information from between-time comparisons
+- no confounding by time: perfect adjustment
+- the value of the time isn't used, only the ordering: transformations of time don't matter
+- (there's no link between $z_i$ at different values of $t$)
+
+## Example
+
+Randomised trial of chemotherapy for colon cancer
+
+Three treatment groups
+
+- control
+- levamisole
+- levamisole + 5-fluorouracil
+
+Also measured age, sex, things about the tumour.
+
+We have time to recurrence and time to death.
+
+## Simple comparisons
+
+
+```{r}
+data(colon)
+deaths<-subset(colon, etype==2)
+recur<-subset(colon, etype==1)
+
+coxph(Surv(time,status)~I(rx=="Obs"), data=deaths)
+```
+
+---
+
+```{r}
+coxph(Surv(time,status)~rx, data=deaths)
+```
+
+## Cox vs logrank
+ 
+Cox model tests for binary variable very similar to logrank test
+
+- logrank test is **exactly** the score test for the partial likelihood
+- *cf* Mantel-Haenszel test and conditional logistic regression
+
+In two-group case, estimate $\hat\beta$ solves
+$$0=\int_0^\infty w(t)\left(\frac{d\bar N_A(s)}{\bar Y_A(s)}-e^\beta\frac{d\bar N_B(s)}{\bar Y_B(s)}\right)$$
+for same $w(t)$ as logrank test
+
+## Age and interaction
+
+```{r}
+coxph(Surv(time,status)~rx*age, data=deaths)
+```
+
+What do the coefficients mean now?
+
+## Age and interaction
+
+```{r}
+coxph(Surv(time,status)~rx*I(age-60), data=deaths)
+```
+
+What do the coefficients mean now?
+
+## Estimating survival
+
+We don't need $\lambda_0(t)$ to estimate $\beta$, but we do to predict $S(t;z)$.
+
+(Aalen-)Breslow estimator similar to Nelson-Aalen estimator, but giving each person a weight of $e^{z\beta}$
+
+$$\hat\Lambda_0(t) = \int_0^t \frac{\sum_i e^{z_i\beta}d N_i(s)}{\sum_i e^{z_i\beta} Y_i(s)}$$
+
+Compute $\hat{\Lambda}(t;z_i)$ for an individual $i$ by multiplying by $e^{z_i\beta}$
+
+Compute $\hat{S}(t;z_i)$ as $\exp(-\Lambda(t))$
