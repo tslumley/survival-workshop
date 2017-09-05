@@ -26,7 +26,16 @@ When we analyse the data, the event still hasn't happened for some people, or it
 
 Me: 
 
-- Biostatistics
+- epidemiology: cardiovascular disease, genomics
+- computing: ported the S-PLUS 'survival' package to R, wrote a LISP-Stat survival package
+- theory: survival analysis in subsamples, eg, case-cohort designs.
+
+You:
+
+- what area of application?
+- what are you hoping to get out of the course?
+
+
 
 ## Course content
 
@@ -50,6 +59,16 @@ Mostly:
 - 45 min lecture
 - 30 min practical
 - 15 min discussion
+
+Ask questions, or I won't know what I'm not explaining right.
+
+## Maths warning
+
+There will be equations, because they help some people understand some things.
+
+You can ignore them if you don't like them.
+
+They won't be on the exam.
 
 ## Software
 
@@ -528,3 +547,71 @@ $$\hat\Lambda_0(t) = \int_0^t \frac{\sum_i e^{z_i\beta}d N_i(s)}{\sum_i e^{z_i\b
 Compute $\hat{\Lambda}(t;z_i)$ for an individual $i$ by multiplying by $e^{z_i\beta}$
 
 Compute $\hat{S}(t;z_i)$ as $\exp(-\Lambda(t))$
+
+
+## Example: survival curves
+
+```{r}
+mtrt<-coxph(Surv(time/365,status)~rx,data=subset(colon, etype==2))
+plot(survfit(mtrt, newdata=data.frame(rx=c("Obs","Lev","Lev+5FU"))))
+```
+
+## Compared to Kaplan-Meier
+
+```{r}
+plot(survfit(mtrt, newdata=data.frame(rx=c("Obs","Lev","Lev+5FU"))))
+lines(survfit(Surv(time/365,status)~rx,data=subset(colon, etype==2)),
+      col="blue")
+```
+
+## Scatterplots 
+
+```{r}
+plot(time~age,pch=ifelse(status==1,20,1),
+     col=ifelse(status==1, "blue","gray"),data=deaths)
+```
+
+## Quantile smoothing
+
+Estimate $S(t;\textrm{age}=60)$ with a Kaplan-Meier estimator using just points near $\mathrm{age}=60$.
+
+Even better, weight points according to the age difference from $\mathrm{age}=60$.
+
+Repeat for different values of 60, extract some quantiles
+
+
+
+## Kaplan-Meier contour plot
+
+
+```
+source("kmq.R")
+plot(time~age,pch=ifelse(status==1,20,1),
+     col=ifelse(status==1, "blue","gray"),data=deaths)
+qq<-with(deaths, kmquantiles(time,status, age,p=c(0.9,0.75,0.5)))
+lines(qq$x,qq$y["0.9",])
+lines(qq$x,qq$y["0.75",])
+lines(qq$x,qq$y["0.5",])
+```
+
+---
+
+```{r echo=FALSE}
+source("kmq.R")
+plot(time~age,pch=ifelse(status==1,20,1),
+     col=ifelse(status==1, "blue","gray"),data=deaths)
+qq<-with(deaths, kmquantiles(time,status, age,p=c(0.9,0.75,0.5)))
+lines(qq$x,qq$y["0.9",])
+lines(qq$x,qq$y["0.75",])
+lines(qq$x,qq$y["0.5",])
+```
+
+
+## Exercise
+
+Your turn, with a famous survival data set
+
+## Questions?
+
+<img src="weka_hires.jpg" height=500">
+
