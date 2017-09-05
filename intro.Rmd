@@ -617,7 +617,7 @@ Your turn, with a famous survival data set
 
 ## Time scales
 
-Cox model compares people with different covariates at the same point in time: so far, time since start of study
+Cox model compares people with different covariates *at the same point in time*: so far, time since start of study
 
 Could equally be:
 
@@ -625,6 +625,8 @@ Could equally be:
 - calendar time
 - time since exposure started
 - time since last event
+
+Which one do you want perfect adjustment for?
 
 ## Left truncation
 
@@ -654,7 +656,7 @@ We get left truncation for free!
 
 Nothing in the formulas requires $z_i$ to be the same at different times. We can rewrite the partial likelihood as
 
-$$p(\beta)= \frac{\lambda_0(t)e^{z_i(t)\beta}}{\sum_{\textrm{alive at } t} \lambda_0(t)e^{z_j(t)\beta}}=\frac{e^{z_i(t)\beta}}{\sum_{\textrm{alive at } t} e^{z_j(t)\beta}}$$
+$$p(\beta)= \frac{\lambda_0(t)e^{z_i(t)\beta}}{\sum_{j\textrm{ alive at } t} \lambda_0(t)e^{z_j(t)\beta}}=\frac{e^{z_i(t)\beta}}{\sum_{j\textrm{ alive at } t} e^{z_j(t)\beta}}$$
 
 Now we are asking about how the **current** value of $z$ affects the hazard of death, rather than the value of $z$ at time 0.
 
@@ -663,12 +665,63 @@ We also get time-varying covariates for free<sup>*</sup>!
 <sup>*</sup> <sup>terms and conditions apply</sup>
 
 
+## Computation
+
+The simplest way to  allow covariates to change is multiple records per person (R, Stata, SAS)
+
+Each record has 
+
+- start time
+- stop time
+- event status at the stop time
+- current covariate values
+
+## Examples
+
+Stanford Heart Transplant program: survival for people entered on the waiting list
+
+Two periods:
+
+- start at waiting list entry, end at transplant or death, `transplanted=0`
+- start at transplant, end at death or end of follow-up,`transplanted=1`
+- plus time-constant baseline covariates
+
+---
+
+Impact of protection orders on intimate partner violence: (Holt et al, JAMA 2002)
+
+- initial event to grant of protection order (`order=none`)
+- first six months of protection order (`order=recent`)
+- after first six months (`order=established`)
+- after end of order (`order=none`)
+- plus time-constant baseline covariates
+
+---
+
+Adherence to medications as a predictor of stroke
+
+- `adherent=TRUE` starting when a new prescription is filled.
+- `adherent=FALSE` when it should have run out (at 80% adherence)
+- other covariates (eg other illness) updated according to medical records
+
+## But what does it mean
+
+- No use for prediction (except if we have future covariates)
+- Endogeneity (consider `heart_is_beating=TRUE/FALSE`)
+
+## Exercise
+
+Time scales and time-varying predictors
+
+## Questions?
+
+<img src="weka_hires.jpg" height=500">
 
 ## There's more!
 
 Nothing in the formulas requires people to go away after they have an event. We don't even need to rewrite the partial likelihood
 
-$$p(\beta)= \frac{\lambda_0(t)e^{z_i(t)\beta}}{\sum_{\textrm{observed at } t} \lambda_0(t)e^{z_j(t)\beta}}=\frac{e^{z_i(t)\beta}}{\sum_{\textrm{observed at } t} e^{z_j(t)\beta}}$$
+$$p(\beta)= \frac{\lambda_0(t)e^{z_i(t)\beta}}{\sum_{j\textrm{ observed at } t} \lambda_0(t)e^{z_j(t)\beta}}=\frac{e^{z_i(t)\beta}}{\sum_{j\textrm{ observed at } t} e^{z_j(t)\beta}}$$
 
 Now we are asking about how the **current** value of $z$ affects the rate of events.
 
@@ -678,3 +731,4 @@ Define $Y_i(s)=1$ between the starting time and ending time, $Y_i(s)=0$ otherwis
 We also recurrent events for free<sup>*</sup>!
 
 <sup>*</sup> <sup>terms and conditions apply</sup>
+

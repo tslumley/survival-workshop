@@ -1,0 +1,57 @@
+---
+title: "Time-to-event analysis"
+author: "Thomas Lumley"
+date: "2017-9-13"
+output: ioslides_presentation
+---
+
+## Questions?
+
+<img src="weka_hires.jpg" height=500">
+
+## Recurrent events
+
+Nothing in the formulas requires people to go away after they have an event. We don't even need to rewrite the partial likelihood
+
+$$p(\beta)= \frac{\lambda_0(t)e^{z_i(t)\beta}}{\sum_{j\textrm{ observed at } t} \lambda_0(t)e^{z_j(t)\beta}}=\frac{e^{z_i(t)\beta}}{\sum_{j\textrm{ observed at } t} e^{z_j(t)\beta}}$$
+
+Now we are asking about how the **current** value of $z$ affects the rate of events.
+
+Define $Y_i(s)=1$ between the starting time and ending time, $Y_i(s)=0$ otherwise. All the same formulas work. 
+
+
+We also recurrent events for free<sup>*</sup>!
+
+<sup>*</sup> <sup>terms and conditions apply</sup>
+
+## Computation
+
+Multiple records, just as for time-varying predictors
+
+More than one record for a given person can end with an event
+
+We need an `id` variable to track which records are the same person
+
+## Issues
+
+Correlation: people who have had an event may be at higher risk of a second
+
+- because the first event really increased their risk (eg sprain)
+- because the first event revealed they were at high risk (eg asthma)
+
+Easy to handle: variance estimator using `id` variable, similar to GEE for longitudinal data
+
+- `+cluster(id)` in model formula for R
+- `, cluster(id)` option for Stata
+- `ID` statement and `COVS(AGGREGATE)` option in SAS
+
+---
+
+Time scale: should we be comparing
+
+- people at the same time after a fixed time zero?
+- people at the same time after their previous event?
+
+Either can make sense: need to think about what you want. 
+
+Therneau & Hamilton (1997, *Statistics in Medicine*) has good examples.
