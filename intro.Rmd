@@ -615,3 +615,66 @@ Your turn, with a famous survival data set
 
 <img src="weka_hires.jpg" height=500">
 
+## Time scales
+
+Cox model compares people with different covariates at the same point in time: so far, time since start of study
+
+Could equally be:
+
+- time since birth
+- calendar time
+- time since exposure started
+- time since last event
+
+## Left truncation
+
+For some time scales (eg age), we don't have everyone under observation at the start of time
+
+- people enter the study at some starting age
+- the study ends at some stopping age 
+- they might die at some age in between
+
+We say there is *left truncation* at the entry time
+
+- *left*: time passing from left to right
+- *truncation*: we don't get to see people who die before the starting age. They aren't in the data set.
+
+## Estimation
+
+- Can't estimate $S(t)$ at ages before we have data
+- Can estimate decreases in $S(t)$ after we have data
+- Can estimate hazards after we have data
+- Can estimate hazard ratios after we have data
+
+Define $Y_i(s)=1$ between the starting time and death or ending time, $Y_i(s)=0$ otherwise. All the same formulas work. 
+
+We get left truncation for free!
+
+## But wait!
+
+Nothing in the formulas requires $z_i$ to be the same at different times. We can rewrite the partial likelihood as
+
+$$p(\beta)= \frac{\lambda_0(t)e^{z_i(t)\beta}}{\sum_{\textrm{alive at } t} \lambda_0(t)e^{z_j(t)\beta}}=\frac{e^{z_i(t)\beta}}{\sum_{\textrm{alive at } t} e^{z_j(t)\beta}}$$
+
+Now we are asking about how the **current** value of $z$ affects the hazard of death, rather than the value of $z$ at time 0.
+
+We also get time-varying covariates for free<sup>*</sup>!
+
+<sup>*</sup> <sup>terms and conditions apply</sup>
+
+
+
+## There's more!
+
+Nothing in the formulas requires people to go away after they have an event. We don't even need to rewrite the partial likelihood
+
+$$p(\beta)= \frac{\lambda_0(t)e^{z_i(t)\beta}}{\sum_{\textrm{observed at } t} \lambda_0(t)e^{z_j(t)\beta}}=\frac{e^{z_i(t)\beta}}{\sum_{\textrm{observed at } t} e^{z_j(t)\beta}}$$
+
+Now we are asking about how the **current** value of $z$ affects the rate of events.
+
+Define $Y_i(s)=1$ between the starting time and ending time, $Y_i(s)=0$ otherwise. All the same formulas work. 
+
+
+We also recurrent events for free<sup>*</sup>!
+
+<sup>*</sup> <sup>terms and conditions apply</sup>
