@@ -142,10 +142,64 @@ Round the times to each 5 years
 
 Biased: the denominator actually changes over the 5 years
 
-What happens as the time intervals get shorter?
+What happens as the time intervals get shorter: 10, 5, 2, 1, 1/2, 1/12...
 
-## Example
+## Example: individual times
 
+```{r echo=FALSE}
+library(survival)
+data(pbc)
+
+dies<-function(time, status, from, to){
+	keep<-time>from
+	time<-time[keep]
+	status<-status[keep]
+	status[time>to]<-0 #I aten't dead
+	mean(status)
+}
+
+t10<-with(pbc, dies(time/365, status, from=0, to=10))
+
+
+t5<-with(pbc,c(dies(time/365,status,0,5),
+	dies(time/365,status,5,10)))
+
+
+
+t2<-with(pbc, c(dies(time/365,status,0,2),
+	dies(time/365,status,2,4),
+	dies(time/365,status,4,6),
+	dies(time/365,status,6,8),
+	dies(time/365,status,8,10)))
+	
+t1<-sapply(0:9, function(from) with(pbc, dies(time/365,status, from,from+1)))	
+
+thalf<-sapply(seq(0,9.5,by=0.5), function(from) with(pbc, dies(time/365,status, from,from+0.5)))	
+
+tmonth<-sapply(seq(0,9+11/12,by=1/12), function(from) with(pbc, dies(time/365,status, from,from+1/12)))	
+
+## Individual points get noisier
+plot(1:10,t1,type="h",xlab='Years',ylab="Proportion dying",ylim=range(0,t1))
+```
+
+---
+
+```{r echo=FALSE}
+plot(seq(1/12,10,by=1/12),tmonth,type="h",xlab='Years',ylab="Proportion dying")
+```
+
+## Example: survival function
+
+```{r echo=FALSE}
+## survival function doesn't
+plot(c(0,10), c(1,cumprod(1-t10)),type="s",xlab="years",ylab="Proportion alive", ylim=c(0,1))
+lines(c(0,5, 10), c(1, cumprod(1-t5)),type="s",lty=2)
+lines(c(0,2,4,6,8,10), c(1, cumprod(1-t2)),type="s",lty=3)
+
+lines(c(0:10), c(1, cumprod(1-t1)),type="s",lty=1,col="blue")
+lines(seq(0,10,by=0.5), c(1, cumprod(1-thalf)),type="s",lty=3,col="blue")
+lines(seq(0,10,by=1/12), c(1, cumprod(1-tmonth)),type="s",lty=1,col="goldenrod")
+```
 
 
 ## Shorter intervals
@@ -168,6 +222,9 @@ Ends up with Kaplan--Meier estimator
 
 ## Example
 
+(in R)
+
+
 ## Maximum likelihood
 
 What $\hat S()$ makes the likelihood of the data set highest?
@@ -185,12 +242,57 @@ Choosing the step sizes to maximise the likelihood also gives the Kaplan-Meier e
 - Survival at particular times (eg, five years, one year, 30 days)
 - The **restricted** mean: area under the $\hat{S}(t)$ curve up to some time limit (eg five years)
 
+## Exercise
+
+You, too, can compute the Kaplan--Meier estimator
+
+
+## Questions?
+
+<img src="weka_hires.jpg" height=500">
+
+
+## Censoring assumptions
+
+Basic assumption: the probability of dying at time $t$ is the same for someone censored before $t$ as for someone being observed at $t$.
+
+In regression models, can weaken this to: the probability of dying at time $t$ is the same for someone censored before $t$ as for someone being observed at $t$ who has the same covariate values.
+
+Formal name: **Non-informative censoring** or **Ignorable Censoring** or **Censoring At Random**
+
+---
+
+It is **impossible** to get an unbiased estimate of ${S}(t)$ without the ignorable-censoring assumption.
+
+You **cannot** test this assumption using the data. 
+
+Sometimes, you can estimate something else useful instead of $S(t)$ (competing risks; tomorrow)
+
+
+## Common two-sample comparisons
+
+- Median survival
+- **% surviving five years** (say)
+- restricted mean survival
+- **hazard rates**
+
+## Survival at a point
+
+- Estimate $S(t)$ in each group: $\hat{S}_A(t)$, $\hat{S}_B(t)$
+- Difference: $\hat{S}_A(\textrm{5 years})-\hat{S}_B(\textrm{5 years})$ has Normal distribution
+- Variance of difference: $$\mathrm{var}[\hat{S}_A(\textrm{5 years})]+\mathrm{var}[\hat{S}_A(\textrm{5 years})]$$
+
+Need variances. Easiest to go via the **hazard function**
+
+
 ## Hazard
 
-Rate at which events are happening (eg %/year)
+Rate at which events are happening (eg %/year). Written $h(t)$ or $\lambda(t)$
 
 - Average rate over time:  $(\sum_i \Delta_i)/(\sum_i T_i)$, eg 161 deaths in 2196 person-years of followup gives 7%/year death rate
 - As a function of time: is it going up or down? What is the rate at 1 year?
+
+Estimation involves smoothing over short windows of time
 
 ## Example:PBC
 
@@ -201,7 +303,7 @@ with(pbc, plot(muhaz(time/365, status==2)))
 
 ## Cumulative Hazard
 
-$H(t)$ or $\Lambda(t)$
+Written capital $H(t)$ or $\Lambda(t)$
 
 - adding up the hazard over time
 - expected number of deaths if people didn't go away when they died
@@ -209,37 +311,34 @@ $H(t)$ or $\Lambda(t)$
 
 Estimator: (Nelson-Aalen)
 
-$$\hat\Lambda(t) = \sum_{s<t} \frac{\textrm{deaths at }s}{\textrm{alive before }s}$$
-
-If you know logarithms, show: $\hat\Lambda(t)\approx -\log \hat S(t)$
-
-## Censoring assumptions
-
-Basic assumption: the probability of dying at time $t$ is the same for someone censored before $t$ as for someone being observed at $t$.
-
-In regression models, can weaken this to: the probability of dying at time $t$ is the same for someone censored before $t$ as for someone being observed at $t$ who has the same covariate values.
-
-Formal name: **Non-informative censoring** or **Ignorable Censoring** or **Censoring At Random**
-
-It is **impossible** to estimate $\hat{S}(t)$ without making this assumption.
-
-You **cannot** test this assumption using the data. 
+$$\hat\Lambda(t) = \sum_{s\leq t} \frac{\textrm{deaths at }s}{\textrm{alive before }s}$$
 
 
-## Questions?
+## Example
 
-<img src="weka_hires.jpg" height=500">
+```{r}
+plot(survfit(Surv(time/365,status==2)~1,data=pbc),fun="cumhaz",
+     xlab="Years",ylab="Cumulative Hazard")
+```
 
-## Common two-sample comparisons
+## Related to survival
 
-- Median survival
-- **% surviving five years** (say)
-- restricted mean survival
-- **hazard rates**
+$$\Lambda(t)= -\log S(t)$$
+and
+$$\hat{\Lambda}(t)\approx -\log\hat{S}(t)$$
+because
+$$\log\prod_{s\leq t}\left(1-\frac{\textrm{died}}{\textrm{at risk}}\right)=\sum_{s\leq t}\log\left(1-\frac{\textrm{died}}{\textrm{at risk}}\right)\approx -\sum_{s\leq t} \frac{\textrm{died}}{\textrm{at risk}}$$
 
-## 
+## Variance of hazard
 
-## The logrank test
+Treat each time point as independent Binomial 
+
+$$\widehat{\mathrm{var}}[\hat{\Lambda}(t)]=\sum_{s\leq t} \frac{\textrm{deaths at }s}{\textrm{alive before }s}\left(1-\frac{\textrm{deaths at }s}{\textrm{alive before }s}\right)\frac{1}{\textrm{alive before }s}$$
+
+Not **really** independent, but it **is** valid
+
+So, we can get $\widehat{\mathrm{var}}[\hat{S}(t)]$ from the $S(t)=\exp( -\Lambda(t))$ relationship, and compare $\hat{S}$ between groups.
+
 
 
 
@@ -280,4 +379,33 @@ $$\hat\Lambda(t) = \int_0^t \frac{d\bar N(s)}{\bar Y(s)}$$
 It just means
 $$\hat\Lambda(t) = \sum_{s\leq t} \frac{\textrm{deaths at }s}{\textrm{alive before }s}$$
 
+
+## The logrank test
+
+- Compute $d\bar N(s)$ in two groups and take the difference
+- Add up over time, weighted according to how much information is available
+
+$$Q = \int_0^\infty w(t)\left(\frac{d\bar N_A(s)}{\bar Y_A(s)}-\frac{d\bar N_B(s)}{\bar Y_B(s)}\right)$$
+
+- If the difference is in a consistent direction, $Q$ will be big
+- $Q$ will have a Normal distribution, similar trick for estimating its variance.
+- People usually quote $Q^2/\mathrm{var}[Q]$, not $Q$, which has a $\chi^2_1$ distribution
+
+## Weights
+
+If the relative difference is roughly constant, (proportional hazards), we care about how much information is available at each time:
+
+- Want $$\frac{1}{w(s)}\propto\frac{1}{\bar Y_A(s)}+\frac{1}{\bar Y_B(s)}$$
+
+If the relative difference increases or decreases over time, multiply by some increasing or decreasing function of time:
+
+- $\hat{S}(s)^\rho(1-\hat{S}(s))^\gamma$ is a convenient family of functions that can be increasing, decreasing or both
+
+## Exercise
+
+Comparing two groups
+
+## Questions?
+
+<img src="weka_hires.jpg" height=500">
 
