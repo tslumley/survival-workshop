@@ -542,7 +542,7 @@ We don't need $\lambda_0(t)$ to estimate $\beta$, but we do to predict $S(t;z)$.
 
 (Aalen-)Breslow estimator similar to Nelson-Aalen estimator, but giving each person a weight of $e^{z\beta}$
 
-$$\hat\Lambda_0(t) = \int_0^t \frac{\sum_i e^{z_i\beta}d N_i(s)}{\sum_i e^{z_i\beta} Y_i(s)}$$
+$$\hat\Lambda_0(t) = \int_0^t \frac{ d \bar N(s)}{\sum_i e^{z_i\beta} Y_i(s)}$$
 
 Compute $\hat{\Lambda}(t;z_i)$ for an individual $i$ by multiplying by $e^{z_i\beta}$
 

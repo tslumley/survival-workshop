@@ -34,7 +34,7 @@ We need an `id` variable to track which records are the same person
 
 ## Issues
 
-Correlation: people who have had an event may be at higher risk of a second
+**Correlation**: people who have had an event may be at higher risk of a second
 
 - because the first event really increased their risk (eg sprain)
 - because the first event revealed they were at high risk (eg asthma)
@@ -47,11 +47,63 @@ Easy to handle: variance estimator using `id` variable, similar to GEE for longi
 
 ---
 
-Time scale: should we be comparing
+**Time scale**: should we be comparing
 
 - people at the same time after a fixed time zero?
 - people at the same time after their previous event?
 
 Either can make sense: need to think about what you want. 
 
-Therneau & Hamilton (1997, *Statistics in Medicine*) has good examples.
+
+
+
+
+
+## Competing risks
+
+Example: tumours are removed surgically, and the surgeon is interested whether the removal is complete enough
+
+- surgery couldn't do anything about metastases
+- surgeon wants the time to *local* recurrence, censored at death or distant recurrence
+
+Example: blood pressure treatment reduces risk of stroke and heart disease
+
+- researchers want time to stroke or heart attack
+- deaths from other causes wouldn't be affected by treatment, use as censoring time
+
+## Problem
+
+Ignorable censoring assumption would say that someone who died of another cause was still at the same risk of stroke or heart attack or local recurrence as someone still alive
+
+They aren't. They're dead. 
+
+Ignorable censoring **can't be** true in the usual sense
+
+## What can we estimate?
+
+**Crude incidence**: what proportion of people get/don't get local recurrence or stroke by time $t$? Unlike $S(t)$, won't go all the way to zero for large $t$. 
+
+**Cause-specific hazard**: rate of events from a specific cause 
+
+Both involve removing the effect of actual censoring, but not of competing risks. 
+
+## Not the same
+
+Example: 
+
+- group 1: rates of 3 (per decade, 30%/year) for cancer and non-cancer deaths
+- group 2: cancer rate of 2, non-cancer rate of 1 (per decade)
+
+
+Cause-specific hazard of cancer is higher in group 1, but more people eventually die of cancer in group 2 because they don't die of other things first. 
+
+## Computation
+
+- Cause-specific hazards are what you estimate if you do a Cox model 'censoring' at deaths from other causes
+- Crude incidence is what you estimate if you say someone dying of one cause never dies of other causes and is censored at the end of the study -- but that gets the standard errors wrong.
+
+R package `cmprsk` does crude-incidence comparisons and regression models
+
+`-stcrreg-` and `-stcurve-` in Stata'
+
+`eventcode` option to `PHREG` in SAS
