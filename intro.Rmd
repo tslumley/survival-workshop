@@ -717,18 +717,3 @@ Time scales and time-varying predictors
 
 <img src="weka_hires.jpg" height=500">
 
-## There's more!
-
-Nothing in the formulas requires people to go away after they have an event. We don't even need to rewrite the partial likelihood
-
-$$p(\beta)= \frac{\lambda_0(t)e^{z_i(t)\beta}}{\sum_{j\textrm{ observed at } t} \lambda_0(t)e^{z_j(t)\beta}}=\frac{e^{z_i(t)\beta}}{\sum_{j\textrm{ observed at } t} e^{z_j(t)\beta}}$$
-
-Now we are asking about how the **current** value of $z$ affects the rate of events.
-
-Define $Y_i(s)=1$ between the starting time and ending time, $Y_i(s)=0$ otherwise. All the same formulas work. 
-
-
-We also recurrent events for free<sup>*</sup>!
-
-<sup>*</sup> <sup>terms and conditions apply</sup>
-

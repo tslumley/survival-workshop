@@ -81,9 +81,9 @@ Ignorable censoring **can't be** true in the usual sense
 
 ## What can we estimate?
 
-**Crude incidence**: what proportion of people get/don't get local recurrence or stroke by time $t$? Unlike $S(t)$, won't go all the way to zero for large $t$. 
+**Crude incidence**: what proportion of people get/don't get local recurrence or stroke by time $t$? Crude incidences add up to $1-\hat{S}(t)$
 
-**Cause-specific hazard**: rate of events from a specific cause 
+**Cause-specific hazard**: rate of events from a specific cause. Cause-specific hazards add up to $\hat{\Lambda}(t)$
 
 Both involve removing the effect of actual censoring, but not of competing risks. 
 
@@ -91,11 +91,13 @@ Both involve removing the effect of actual censoring, but not of competing risks
 
 Example: 
 
-- group 1: rates of 3 (per decade, 30%/year) for cancer and non-cancer deaths
-- group 2: cancer rate of 2, non-cancer rate of 1 (per decade)
+- group 1: rates of  30%/year for cancer and non-cancer deaths
+- group 2: cancer rate of 20%/year, non-cancer rate of 10%/year
 
 
 Cause-specific hazard of cancer is higher in group 1, but more people eventually die of cancer in group 2 because they don't die of other things first. 
+
+Crude incidence and cause-specific hazard need not agree unless all event probabilities are low.
 
 ## Computation
 
