@@ -96,8 +96,8 @@ $$p(\beta)= \frac{\lambda_0(t)e^{z_{i0}(t)\beta}}{ \lambda_0(t)e^{z_{i0}(t)\beta
 
 More generally, to do comparisons within a **stratum**, the denominator is only a sum over people in that stratum under observation at the same time.
 
+Implies a separate (not estimated) baseline $\lambda_0(t)$ for each stratum
 
-(Economists call this a *fixed-effects* analysis)
 
 ---
 
@@ -169,7 +169,7 @@ Why might...
 - someone who had a distance cancer recurrence have been at a higher or lower risk for local recurrence?
 - someone who had a heart attack have been at a higher or lower risk for cancer?
 
-...talk to the person next to your for a couple of minutes.
+...talk to the person next to you for a couple of minutes.
 
 ## What can we estimate?
 
@@ -228,7 +228,7 @@ We've assumed that
 
 These aren't always true.  
 
-We've also implicitly assumed all the event times (in a stratum) are different when writing down the partial likelihood.
+We've also *implicitly* assumed all the event times (in a stratum) are different when writing down the partial likelihood.
 
 ## Ties from rounding
 
@@ -251,7 +251,7 @@ We don't know the time ordering of the real events between diagnostic tests, so 
 
 If everyone has similar test schedule or test schedule is frequent enough, just pretend the events happen at the test times. 
 
-Otherwise: interval censoring is hard.
+Otherwise: interval censoring is hard, especially if the covariate of interest is related to test schedule.
 
 ## Retrospective assessment
 
@@ -286,8 +286,113 @@ These are hard if the errors are large/frequent.  Ask an expert.
 <img src="weka_hires.jpg" height=500">
 
 
-## Parametric survival models
+## Beyond proportional hazards
 
+Why is the Cox model so popular?
+
+- Computationally well-behaved (important in 1980s)
+- Close relationship to logistic regression in case-control studies
+- Lots of easy extensions
+- Mathematically interesting
+- Any model is ok when effects are weak
+
+Not because it necessarily fits well. 
+
+## Diagnostics
+
+Useful
+
+- compare predicted survival from the model to the Kaplan-Meier estimator
+- smoothed Schoenfeld residual plots
+
+Useful but computationally annoying
+
+- explicit interactions with time
+
+Useless but widely available
+
+- loglog plots (plots of $-\log\Lambda(t)$ by discrete variables)
+
+
+## Schoenfeld residuals
+
+Given $z_j$ for people at risk at time $t$, we can compute an *average* expected $z_i$ for the person who has an event
+$$e(t) = \frac{\sum_{i\textrm{ at risk}}z_j(t)e^{z_j(t)\beta}}{\sum_{j\textrm{ at risk}} e^{z_j(t)\beta}}$$
+On average, the person with event will have 'worse' covariates than the whole cohort
+
+We can compare $e(t)$ to the covariates for the person who actually had an event, say, $z_i(t)$.
+
+The *Schoenfeld residuals* are $r(t)=z_i(t)-e(t)$. They have zero mean if the model is correct, and tend to have time trends if proportional hazards is not true.
+
+## Using the
+
+Formal test for correlation between $r(t)$ and some function of $t$.
+
+- R: `cox.zph()`
+- Stata: `estat phtest` after fitting a Cox model
+- SAS: need to do some work.
+
+Plot a scaled version of the residuals against time, use a smoother to estimate $\beta(t)$
+
+## Example
+
+```{r}
+library(survival)
+data(pbc)
+
+model<-coxph(Surv(time,status==2)~log(bili)+protime+albumin, data=pbc)
+test<-cox.zph(model)
+test
+```
+
+---
+
+
+```{r}
+par(mfrow=c(1,2),mar=c(4,4,.1,1))
+plot(test[1])
+plot(test[2])
+```
+
+## Useless approach
+
+- Divide `protime` into categories
+- Fit a stratified Cox model
+- Estimate the baseline cumulative hazard $\Lambda_0(t)$ for each stratum
+- Plot the estimates $-\log\Lambda(t)$
+- If proportional hazards is true, the curves should be parallel. 
+
+Useless because you can't judge parallelness of curves (even without sampling noise)
+
+## Example
+
+```
+m2<-coxph(Surv(time,status==2)~log(bili)+albumin+strata(protime>10),
+          data=pbc)
+plot(survfit(m2,
+      newdata=data.frame(bili=c(3,3),protime=c(9,12),albumin=c(3.5,3.5))),
+     fun="cloglog")
+plot(survfit(m2,
+      newdata=data.frame(bili=c(3,3),protime=c(9,12),albumin=c(3.5,3.5))),
+     fun="cloglog", conf.int=TRUE,col=c("blue","goldenrod"))
+```
+
+---
+
+```{r echo=FALSE}
+m2<-coxph(Surv(time,status==2)~log(bili)+albumin+strata(protime>10),data=pbc)
+plot(survfit(m2, newdata=data.frame(bili=c(3,3),protime=c(9,12),albumin=c(3.5,3.5))),
+     fun="cloglog")
+```
+
+---
+
+```{r echo=FALSE}
+plot(survfit(m2,newdata=data.frame(bili=c(3,3),protime=c(9,12),albumin=c(3.5,3.5))),
+     fun="cloglog", conf.int=TRUE,col=c("blue","goldenrod"))
+```
+
+## Accelerated-failure models.
 
 ## Exercise
 
