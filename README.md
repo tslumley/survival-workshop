@@ -5,3 +5,6 @@ Materials for a two-day course on survival analysis to be held at University of 
 (c) Thomas Lumley.  
 
 The weka is by Giselle Clarkson, http://giselledraws.com
+
+The exercise graphic is from
+https://commons.wikimedia.org/wiki/File:OfficeExercisesS2apng.png
