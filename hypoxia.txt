@@ -1,0 +1,18 @@
+stnum                            Patient ID
+age                              Age (years)
+hgb                              Hemoglobin (g/l)
+tumsize                          Tumor size (cm)
+ifp                              Interstitial fluid pressure(marker, mmHg)
+hp5                              Hypoxia marker (percentage ofmeas. < 5 mmHg)
+pelvicln                         Pelvic node involvement:N=Negative, E=Equivocal,Y=Positive
+resp                             Response after treatment:CR=Complete response, NR=Noresponse
+pelrec                           Pelvic disease observed
+disrec                           Distant disease observed
+dftime                           Time from diagnosis to first failure or last follow-up (yrs)
+dfcens                           Censoring variable: 1=Failure,0=Censored
+failtype                         Failure type: 1 if pelrec, 2 if disrec & not pelrec, 0 otherwise
+pelnode                          1 if pelvic nodes negative or equivocal
+
+Because  no  deaths  occurred  before  first  relapse,  death is not considered a competing event in this analysis.
+
+We are interested in the effects of ifp and hp5 on local relapse (ie relapse with failtype==1)

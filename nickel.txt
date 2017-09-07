@@ -1,0 +1,20 @@
+Appendix VIII
+
+     The NICKEL.DAT data file has the structure
+
+          Variable                   Columns       Fortran Format
+          --------                   -------       ------- ------
+          Case ID                      1- 4              I4
+          Primary ICD Code             7- 9              I3
+          Exposure                    12-15             F4.1
+          Date of Birth               18-26             F9.4
+          Age first employed          29-36             F8.4
+          Age follow-up began         39-46             F8.4
+          Age at death or loss        49-56             F8.4
+
+with the fortran format 
+
+          (I4,2X,I3,2X,F4.1,2X,F9.4,3(2X,F8.4)).  
+
+There are 679 records representing the 679 cases in the nickel study data
+file NICKEL.DAT (the complete data file).
