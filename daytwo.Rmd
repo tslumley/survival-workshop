@@ -489,4 +489,159 @@ Computation
 
 ## Subsampling
 
+Suppose we have a large cohort (DHB records, clinical trial, etc) and want to measure some new variables on a subset, as efficiently as possible
+
+- classical case-control sampling
+- case-only sampling for interactions
+- case-cohort sampling
+- calibration 
+- countermatching
+
+## Case-control
+
+**Incidence density sampling**: sample controls from those who haven't had an event (yet) at the time the case has an event
+
+Under incidence density sampling, the odds ratio in a logistic regression model estimates the same thing as the hazard ratio in a Cox model
+
+If you sample controls based on their status at the end of time, the odds ratio is more extreme (further from 1) than the hazard ratio.
+
+Sampling $k$ controls per case gets you about $k/(k+1)$ fraction of the information in the cohort (so 80% for $k=4$)
+
+As you know, case-control sampling is good for effects of common exposures on rare events 
+
+
+
+
+## Case-only for interactions
+
+Suppose you have a randomised trial with treatment $Z$ and you want to look for interactions with a covariate $G$
+
+- genetic variants
+- baseline disease level
+- baseline vitamin level in a vitamin trial
+
+By randomisation, $G$ is independent of $Z$ overall.
+
+If there's no interaction, $G$ is also independent of $Z$ in cases
+
+---
+
+For rare events,the odds ratio between $G$ and $Z$ in cases estimates the interaction hazard ratio in the whole trial cohort
+
+For non-rare events, the odds ratio estimates the interaction odds ratio in the whole trial cohort.
+
+There is no loss of efficiency by looking only at the cases (but you can't estimate absolute risk)
+
+The randomisation assumption is **important**, it's where the extra efficiency comes from.
+
+---
+
+```{r}
+data(colon)
+deaths<-subset(colon, etype==2)
+coxph(Surv(time,status)~rx*sex,data=deaths)
+```
+
+---
+
+```{r}
+summary(glm(status~rx*sex, data=deaths, family=binomial))
+```
+
+---
+
+```{r}
+summary(glm(sex~rx, data=deaths, subset=status==1, family=binomial))
+```
+
+
+## Case-cohort sampling
+
+Sample all your cases, plus some random subcohort of the cohort
+
+- biased sample
+- correct the bias by using weights = 1 for cases, $1/\textrm{sampling probability}$ for others ('extra votes')
+
+Slightly less efficient than case-control sampling for a single question, but
+
+- can later collect additional cases for same controls
+- can use multiple case sets with the same controls
+- can use cases of one event as controls for others
+- can do any analysis, not just logistic/Cox
+
+## Example
+
+CHARGE Consortium DNA sequencing study in five cohorts
+
+- look for functional DNA variants near associations found in early study
+- use complete DNA sequence for short regions near each association (`$$$`)
+- multiple event types: stroke, heart attack, venous thromboembolism
+
+Sample all events of all types, plus random subcohort of each cohort
+
+- all samples used in all analyses
+- easy to add data as more sequencing is funded.
+
+
+## Example
+
+Can oversample 'interesting' participants for subcohort
+
+- high risk (if risk factors known)
+- more likely to be exposed (if known)
+- minorities (if differential effects are of interest)
+- extreme values of interaction variables
+
+Oversampling introduces bias, but bias can be corrected with sampling weights
+
+## Calibration of weights
+
+Taking a subsample has some loss of information because we can be unlucky.
+
+The random subcohort might (by chance) have lower exposure than the average for controls, making the hazard ratio larger. Or *vice versa*
+
+For variables we know in the whole cohort, we can correct for this bad luck by reweighting: groups of people who get undersampled by chance are given 'extra votes', just like people undersampled deliberately.
+
+Big precision gains for coefficients of variables we have on the whole cohort or can predict well (eg self-report vs measured)
+
+(Breslow et al, 2009 *Am J Epi*)
+
+## Countermatching
+
+Setting: rare event, rare exposure, we have a reasonable predictor of exposure
+
+Example: effect of radiotherapy for breast cancer on subsequent heart failure
+
+- For everyone in the cohort, we know if radiation was given and on which side: no radiation or right-side tumour means no radiation to heart, radiotherapy of left-side tumour means likely dose to the heart
+- For a subsample, we can calculate dose to the heart from the detailed radiotherapy records
+
+---
+
+Subsampling scheme
+
+- For every possibly-exposed case, select an unexposed control
+- For every unexposed case, select a possibly-exposed control 
+
+Called 'countermatching' because it's the opposite of matching. 
+
+Heuristically: a control with the same exposure as their matched case is uninformative. Countermatching minimises this problem.
+
+Only works if your prediction of exposure is good enough, but can work very well 
+
+## Calibration
+
+Countermatching balances the controls on one variable, predicted exposure.
+
+It doesn't use any other variables from the whole cohort
+
+Can we combine it with calibration, to use all the available information?
+
+Yes: Rivera & Lumley (2016, *Biometrics*)
+
+## General message
+
+We often have some information on a larger cohort, but can only afford measurements on a small subset.
+
+There are ways to design and analyse the subset to get much better approximations to a Cox model on the whole cohort. 
+
 
