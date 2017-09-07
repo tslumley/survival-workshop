@@ -20,7 +20,7 @@ Now we are asking about how the **current** value of $z$ affects the rate of eve
 Define $Y_i(s)=1$ between the starting time and ending time, $Y_i(s)=0$ otherwise. All the same formulas work. 
 
 
-We also recurrent events for free<sup>*</sup>!
+We also get recurrent events for free<sup>*</sup>!
 
 <sup>*</sup> <sup>terms and conditions apply</sup>
 
@@ -49,10 +49,28 @@ Easy to handle: variance estimator using `id` variable, similar to GEE for longi
 
 **Time scale**: should we be comparing
 
-- people at the same time after a fixed time zero? (eg, same age). Start time for next data record is time of event for past record
-- people at the same time after their previous event? (eg, same recovery time). Start time for next data row is record
+- people at the same time after a fixed time zero? (eg, same age). 
+- people at the same time after their previous event? (eg, same recovery time). 
 
 Either can make sense: need to think about which time variable it's most important to adjust for. 
+
+## Data setup
+
+Someone has events at times 5, 7, 12, and is censored at time 15
+
+- start 0, stop 5, event=1
+- start 5, stop 7, event=1
+- start 7, stop 12, event=1
+- start 12, stop 15, event=0
+
+or 
+
+- start 0, stop 5, event=1
+- start 0, stop 2, event=1
+- start 0, stop 5, event=1
+- start 0, stop 3, event=0
+
+
 
 ## Clustered data
 
@@ -63,7 +81,7 @@ Either can make sense: need to think about which time variable it's most importa
 
 ## Issues
 
-Do you want **matched** comparisons only within groups, or is clustering just a nuisance
+Do you want **matched** comparisons only within groups, or is clustering just a nuisance?
 
 - we care about the difference between same-leg and opposite-leg recurrence of deep vein thrombosis
 - we're studying babies, and a few percent of them happen to be multiples. 
@@ -77,6 +95,9 @@ Label the people in the $i$th pair as $i0$ and $i1$. If $i0$ has an event before
 $$p(\beta)= \frac{\lambda_0(t)e^{z_{i0}(t)\beta}}{ \lambda_0(t)e^{z_{i0}(t)\beta}+ \lambda_0(t)e^{z_{i1}(t)\beta}}=\frac{e^{z_{i0}(t)\beta}}{e^{z_{i0}(t)\beta}+e^{z_{i1}(t)\beta}}$$
 
 More generally, to do comparisons within a **stratum**, the denominator is only a sum over people in that stratum under observation at the same time.
+
+
+(Economists call this a *fixed-effects* analysis)
 
 ---
 
@@ -100,9 +121,24 @@ Use
 
 to get correct standard errors.
 
+## More complicated
+
+We might care about estimating the **correlation** within a cluster
+
+- are monozygotic (identical) twins more similar than dizygotic (fraternal) twins?
+- are you more likely to graduate late if your flatmates do?
+
+This is harder, and the models depend on context.  The R `coxme` package handles heritability estimation for family-based genetics. 
+
 ## Exercise
 
 <img src="exercise.png" height=400px>
+
+
+## Questions?
+
+<img src="weka_hires.jpg" height=500">
+
 
 ## Competing risks
 
@@ -124,11 +160,22 @@ They aren't. They're dead.
 
 Ignorable censoring **can't be** true in the usual sense: competing risks aren't really censoring.
 
+**Conceivable** that someone who died of another cause would still be at the same risk of stroke or heart attack or local recurrence as someone still alive, if they hadn't died.  Unlikely.
+
+## Ignorable?
+
+Why might...
+
+- someone who had a distance cancer recurrence have been at a higher or lower risk for local recurrence?
+- someone who had a heart attack have been at a higher or lower risk for cancer?
+
+...talk to the person next to your for a couple of minutes.
+
 ## What can we estimate?
 
-**Crude incidence**: what proportion of people get/don't get local recurrence or stroke by time $t$? Crude incidences add up to $1-\hat{S}(t)$
+**Crude incidence**: what proportion of people get/don't get local recurrence or stroke by time $t$? Crude incidences add up to total incidence: $1-\hat{S}(t)$
 
-**Cause-specific hazard**: rate of events from a specific cause. Cause-specific hazards add up to $\hat{\Lambda}(t)$
+**Cause-specific hazard**: rate of events from a specific cause. Cause-specific hazards add up to total hazard : $\hat{\Lambda}(t)$
 
 Both involve removing the effect of actual censoring, but not of competing risks. 
 
@@ -165,3 +212,92 @@ R package `cmprsk` does crude-incidence comparisons and regression models
 `-stcrreg-` and `-stcurve-` in Stata'
 
 `eventcode` option to `PHREG` in SAS
+
+## Questions?
+
+<img src="weka_hires.jpg" height=500">
+
+
+## Ties,  intervals, error
+
+We've assumed that
+
+- we know the start time for each person
+- we know the censoring time for each person (if they don't die)
+- we know the event time for each person (if they are under observation)
+
+These aren't always true.  
+
+We've also implicitly assumed all the event times (in a stratum) are different when writing down the partial likelihood.
+
+## Ties from rounding
+
+Times may get rounded off to the nearest day, week, month.
+
+Software uses various approximations to the partial likelihood. They are all Good Enough except in extreme cases.
+
+R and Stata default to the same approximation; SAS defaults to a cruder one. 
+
+Worth knowing about as a potential explanation if you get slightly different results from the same data with different programs.
+
+## Events only at visit
+
+Some events can only be measured retrospectively by a diagnostic test
+
+- incident diabetes
+- HIV infection
+
+We don't know the time ordering of the real events between diagnostic tests, so we don't know who goes in the denominator for the partial likelihood at each event.
+
+If everyone has similar test schedule or test schedule is frequent enough, just pretend the events happen at the test times. 
+
+Otherwise: interval censoring is hard.
+
+## Retrospective assessment
+
+Example: heart attack adjudicated by expert examination of medical records
+
+- date and time is known immediately
+- whether it is an event isn't known until later.
+
+Example: vital status from  death certificate records
+
+- nothing known immediately
+- date and time will be known, but not for a while
+
+The censoring time should be the last time you **know** the event hadn't happened
+
+## Measurement error
+
+- event may be false positive
+- event may be missed
+- start time may be wrong (recall error, eg start time for antiretroviral treatment in HIV)
+
+These are hard if the errors are large/frequent.  Ask an expert. 
+
+
+## Exercise
+
+<img src="exercise.png" height=400px>
+
+
+## Questions?
+
+<img src="weka_hires.jpg" height=500">
+
+
+## Parametric survival models
+
+
+## Exercise
+
+<img src="exercise.png" height=400px>
+
+
+## Questions?
+
+<img src="weka_hires.jpg" height=500">
+
+## Subsampling
+
+
