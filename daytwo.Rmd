@@ -638,10 +638,16 @@ Can we combine it with calibration, to use all the available information?
 
 Yes: Rivera & Lumley (2016, *Biometrics*)
 
-## General message
+## Take-home message
 
 We often have some information on a larger cohort, but can only afford measurements on a small subset.
 
 There are ways to design and analyse the subset to get much better approximations to a Cox model on the whole cohort. 
 
+## Overall take-home message
 
+In lots of ways, survival analysis is just regression or two-group comparisons like anything else.
+
+There are a few important differences due to  censoring, competing risks, truncation.
+
+Mostly, survival analysis is a solved problem with good software available. 
