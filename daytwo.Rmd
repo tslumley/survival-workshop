@@ -324,7 +324,7 @@ We can compare $e(t)$ to the covariates for the person who actually had an event
 
 The *Schoenfeld residuals* are $r(t)=z_i(t)-e(t)$. They have zero mean if the model is correct, and tend to have time trends if proportional hazards is not true.
 
-## Using the
+## Using them
 
 Formal test for correlation between $r(t)$ and some function of $t$.
 
@@ -393,6 +393,58 @@ plot(survfit(m2,newdata=data.frame(bili=c(3,3),protime=c(9,12),albumin=c(3.5,3.5
 ```
 
 ## Accelerated-failure models.
+
+Instead of modelling risk, model time: some people 'age faster' than others
+
+$$\log T = \log T_0+z\beta$$
+$e^\beta$ is the proportional difference in survival time for a one-unit difference in $z$.
+
+We can't (easily) avoid modelling $T_0$: we need to chose a parametric distribution. 
+
+## Simple cases
+
+If the rate is constant over time then both proportional haazards and accelerated failure are true
+
+- $\lambda_0(t)=\lambda$
+- $P(T_0>t)=e^{-\lambda t}$
+
+If the rate has a step increase
+
+- under proportional hazards, different $z$ give different step increases at the same time
+- under accelerated failure, different $z$ give step increases at different times. 
+
+## Why?
+
+- want to extrapolate to where there isn't much data (ok with a good model)
+- tradition: eg in engineering reliability analysis
+- want to get some Normal distributions in there for more complicated modelling ($\log T_0\sim N(\mu,\sigma^2)$)
+- left censoring or interval censoring are easier with parametric models
+
+(Note: left **censoring** means a person is in the data set but had the event before they entered)
+
+## Example
+
+For right-censored data, not very different from Cox model
+
+```{r}
+coxph(Surv(time,status==2)~log(bili)+protime+albumin, data=pbc)
+```
+
+---
+
+```{r}
+summary(survreg(Surv(time,status==2)~log(bili)+protime+albumin,
+                data=pbc,dist="weibull"))
+```
+
+---
+
+
+```{r}
+summary(survreg(Surv(time,status==2)~log(bili)+protime+albumin,
+                data=pbc,dist="lognormal"))
+```
+
 
 ## Exercise
 

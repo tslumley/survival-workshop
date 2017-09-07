@@ -1,0 +1,6 @@
+ Covariates:
+ - stage of disease,stage (0=early stage, 1=late stage)
+ - dose level of thetreatment,dose(0=low dose, 1=high dose). 
+
+ The time intervals, in months, are stored in variables ltime and 
+rtime
