@@ -265,6 +265,8 @@ Choosing the step sizes to maximise the likelihood also gives the Kaplan-Meier e
 
 You, too, can compute the Kaplan--Meier estimator
 
+<img src="exercise.png" height=400px>
+
 
 ## Questions?
 
@@ -423,6 +425,8 @@ If the relative difference increases or decreases over time, multiply by some in
 ## Exercise
 
 Comparing two groups
+
+<img src="exercise.png" height=400px>
 
 ## Questions?
 
@@ -611,6 +615,9 @@ lines(qq$x,qq$y["0.5",])
 
 Your turn, with a famous survival data set
 
+<img src="exercise.png" height=400px>
+
+
 ## Questions?
 
 <img src="weka_hires.jpg" height=500">
@@ -709,9 +716,14 @@ Adherence to medications as a predictor of stroke
 - No use for prediction (except if we have future covariates)
 - Endogeneity (consider `heart_is_beating=TRUE/FALSE`)
 
+"Real-time" covariate updating often doesn't make sense, but 'most recent available' often does.
+
 ## Exercise
 
 Time scales and time-varying predictors
+
+<img src="exercise.png" height=400px>
+
 
 ## Questions?
 
