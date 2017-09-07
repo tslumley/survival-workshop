@@ -463,6 +463,20 @@ summary(survreg(Surv(ltime,rtime,type="interval2")~group,data=lungtumor,
                 dist="exponential"))
 ```
 
+---
+
+```{r}
+exp(-1.07)
+```
+
+Mice in the germ-free environment developed cancer about three times as fast (or at 1/3rd the age) of those in the conventional environment.
+
+---
+
+Computation
+
+- Stata `-intreg-` fits this model with a Normal distribution. The add-on module `-intcens-` adds other distributions: `ssc install intcens` to download it.
+- SAS `PROC LIFEREG` fits this model
 
 ## Exercise
 
