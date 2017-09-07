@@ -445,6 +445,24 @@ summary(survreg(Surv(time,status==2)~log(bili)+protime+albumin,
                 data=pbc,dist="lognormal"))
 ```
 
+## Interval censoring
+
+Data on 144 mice raised in a germ-free environment (48 mice) or a conventional environment (96 mice)
+
+At death, they were examined to see if they had lung tumours.  
+
+If a tumor was present, we know it developed before that time If not, the time until it would have developed is after that time (assumptions)
+
+Define a starting time of `NA` (if present) or the death time (if absent) and an ending time of the death time (if present) or `NA` if absent
+
+---
+
+```{r}
+load("lungtumor.rda")
+summary(survreg(Surv(ltime,rtime,type="interval2")~group,data=lungtumor,
+                dist="exponential"))
+```
+
 
 ## Exercise
 
