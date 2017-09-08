@@ -416,7 +416,7 @@ $$Q = \int_0^\infty w(t)\left(\frac{d\bar N_A(s)}{\bar Y_A(s)}-\frac{d\bar N_B(s
 
 ## Weights
 
-If the relative difference is roughly constant, (proportional hazards), we care about how much information is available at each time:
+If the relative difference is roughly constant, (proportional hazards), we care about how much information is available at each time: ("effective sample size")
 
 - Want $$\frac{1}{w(s)}\propto\frac{1}{\bar Y_A(s)}+\frac{1}{\bar Y_B(s)}$$
 
@@ -466,6 +466,8 @@ A simple regression model for rate of death at a given time
 $$\log \lambda(t;z) = \log\lambda_0(t)+z\beta$$
 
 $\beta$ are log hazard ratios: $e^\beta$ is the ratio of hazards for two people with 1-unit difference in $z$.  The model says this ratio is constant over time. 
+
+If $\beta>0$, people with higher $z$ have higher hazard, and shorter survival times.
 
 $\lambda_0(t)$ is the hazard at time $t$ for someone with $z=0$.
 
