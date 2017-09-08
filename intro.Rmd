@@ -56,8 +56,8 @@ Four 1.5 hour blocks each day
 
 Mostly: 
 
-- 45 min lecture
-- 30 min practical
+- 30-45 min lecture
+- 45-30 min practical
 - 15 min discussion
 
 Ask questions, or I won't know what I'm not explaining right.
@@ -703,6 +703,14 @@ Each record has
 - event status at the stop time
 - current covariate values
 
+## Time-varying covariates and time scales
+
+In a cohort study, everyone has measurements at *same* time since entry
+
+We might want to use age as the time scale, but everyone has measurements at *different* ages
+
+Tradeoff: non-ideal measurement schedule vs non-ideal time scale.
+
 ## Examples
 
 Stanford Heart Transplant program: survival for people entered on the waiting list
@@ -730,6 +738,7 @@ Adherence to medications as a predictor of stroke
 - `adherent=TRUE` starting when a new prescription is filled.
 - `adherent=FALSE` when it should have run out (at 80% adherence)
 - other covariates (eg other illness) updated according to medical records
+
 
 ## But what does it mean
 

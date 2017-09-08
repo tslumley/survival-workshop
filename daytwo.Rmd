@@ -54,6 +54,16 @@ Easy to handle: variance estimator using `id` variable, similar to GEE for longi
 
 Either can make sense: need to think about which time variable it's most important to adjust for. 
 
+---
+
+**Do we even want it**?
+
+- Time to first event might be more interesting than rate of events
+- Factors associated with later events might be different from earlier events (could do interactions with event history)
+
+eg: Factor V Leiden genetic variant is a strong predictor of deep vein thrombosis, but does not predict recurrent DVT in people who have had one. 
+
+
 ## Data setup
 
 Someone has events at times 5, 7, 12, and is censored at time 15
@@ -120,6 +130,19 @@ Use
 - `ID` statement and `COVS(AGGREGATE)` option in SAS
 
 to get correct standard errors.
+
+## Comparing event types
+
+Does antihypertensive treatment reduce stroke risk more than heart attack risk?
+
+Two records per person
+
+- time to stroke
+- time to heart attack
+
+Not just using within-person comparison: too little data
+
+Treat as clusters. 
 
 ## More complicated
 
@@ -251,7 +274,7 @@ We don't know the time ordering of the real events between diagnostic tests, so 
 
 If everyone has similar test schedule or test schedule is frequent enough, just pretend the events happen at the test times. 
 
-Otherwise: interval censoring is hard, especially if the covariate of interest is related to test schedule.
+Otherwise: interval censoring for the Cox model is hard, especially if the covariate of interest is related to test schedule.
 
 ## Retrospective assessment
 
@@ -602,9 +625,16 @@ The random subcohort might (by chance) have lower exposure than the average for 
 
 For variables we know in the whole cohort, we can correct for this bad luck by reweighting: groups of people who get undersampled by chance are given 'extra votes', just like people undersampled deliberately.
 
-Big precision gains for coefficients of variables we have on the whole cohort or can predict well (eg self-report vs measured)
+Related to **imputation**, but makes weaker assumptions
 
-(Breslow et al, 2009 *Am J Epi*)
+---
+
+Big precision gains for coefficients of variables we have on the whole cohort or can predict well
+
+- self-report vs measured risk factors (eg smoking, exercise)
+- less-accurate vs more-accurate assay for exposure (Wilms' Tumour histology)
+
+(Breslow et al, 2009 *Amer J Epi*)
 
 ## Countermatching
 
@@ -642,12 +672,12 @@ Yes: Rivera & Lumley (2016, *Biometrics*)
 
 We often have some information on a larger cohort, but can only afford measurements on a small subset.
 
-There are ways to design and analyse the subset to get much better approximations to a Cox model on the whole cohort. 
+There are ways to **design** and **analyse** the subset to get much better approximations to a Cox model on the whole cohort. 
 
 ## Overall take-home message
 
 In lots of ways, survival analysis is just regression or two-group comparisons like anything else.
 
-There are a few important differences due to  censoring, competing risks, truncation.
+There are a few important differences due to  censoring, competing risks, truncation, choice of time scale.
 
 Mostly, survival analysis is a solved problem with good software available. 
