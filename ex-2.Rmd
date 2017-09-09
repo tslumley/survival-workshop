@@ -1,0 +1,69 @@
+---
+title: "Comparing groups"
+author: "Thomas Lumley"
+date: "12 September 2017"
+output: html_document
+---
+
+Using the time-to-death variables in the colon cancer data set from the previous exercise, we're going to compare the treatment groups.  The `survdiff` function does logrank tests.
+
+
+First, we'll plot the three curves for the three treatments
+
+```{r}
+library(survival)
+colon <-read.csv("colon.csv")
+deaths <- subset(colon, etype==2)
+plot(survfit(Surv(time,status)~rx, data=deaths))
+```
+
+It looks like `Lev` doesn't do anyting, but that `Lev+5FU` is effective. Let's compare it to the other two
+
+```{r}
+survdiff(Surv(time,status)~I(rx=="Lev+5FU"), data=deaths)
+```
+
+Now, try comparing `Lev` to `Obs`: you'll need to get a subset of the data that doesn't have the `Lev+5FU` observations.
+
+Next, we want to look at quantiles
+
+```{r}
+deaths_km <- survfit(Surv(time,status)~rx,data=deaths)
+deaths_km
+```
+
+Why is the median survival undefined for the `Lev+5FU` group?
+
+```{r}
+quantile(deaths_km, probs=c(.1,.25,.5))
+```
+
+Now, look at survival percentages
+
+```{r}
+summary(deaths_km,times=365*c(1,2,5))
+```
+
+Is the difference in 5-year survival statistically significant? (There isn't a nice function for this)
+
+Now do a similar comparison for five-year restricted mean
+
+```{r}
+print(deaths_km,rmean=5*365)
+```
+
+The file `fakelogrank1.csv` has artificial data where the hazard rate curves cross.  Look at the survival curves for the two groups (with the time axis trimmed to a maximum of 10 to make it easier to see)
+
+```
+fake<-read.csv("fakelogrank1.csv")
+plot(survfit(Surv(time,status)~group,data=fake),xlim=c(0,10))
+```
+
+Compare the logrank test and the weighted logrank tests with `rho=1` and `rho=-1`
+
+If you are ok with installing packages, install the `muhaz` package and draw the hazard rate curves
+```
+library(muhaz)
+with(fake, plot(muhaz(time,status,subset=group==0,max.time=10)))
+with(fake, lines(muhaz(time,status,subset=group==1,max.time=10),col="red"))
+```
