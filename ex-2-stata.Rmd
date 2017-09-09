@@ -1,0 +1,51 @@
+---
+title: 'Comparing groups: Stata'
+author: "Thomas Lumley"
+date: "9 September 2017"
+output: html_document
+---
+
+
+
+Using the time-to-death variables in the colon cancer data set from the previous exercise, we're going to compare the treatment groups.  The `-sts test-` command does logrank tests.
+
+
+First,  plot the three curves for the three treatments using `-sts graph-`
+
+It looks like `Lev` doesn't do anyting, but that `Lev+5FU` is effective. Let's compare it to the other two
+
+```
+gen chemo = obs=="Lev+5FU"
+sts test chemo
+```
+
+
+Now, try comparing `Lev` to `Obs`: you'll need to get a subset of the data that doesn't have the `Lev+5FU` observations.
+
+Next, we want to look at quantiles
+
+```
+stci p(50), by(rx)
+stci p(25), by(rx)
+```
+
+Stata doesn't compute restricted means for user-specified intervals, only for the whole curve (which is typically not a good idea).  If you want to compute a 5-year restricted mean survival, you would have to modify the data so that the end of follow-up was at five years.  I think the code would be
+
+```
+replace status=0 if time>5*365
+replace time=5*365 if time>5*365
+stci , rmean by(rx)
+```
+
+
+The file `fakelogrank1.csv` has artificial data where the hazard rate curves cross.  Look at the survival curves for the two groups (with the time axis trimmed to a maximum of 10 to make it easier to see)
+
+```
+infile delimited fakelogrank1.csv
+stset time, failure(status)
+sts graph, by(group)
+```
+
+Compare the logrank test for `group` and the weighted logrank tests with `, fh(1 0)` and `,fh(0 1)` (these are $rho=1$,$\gamma=0$ and $\rho=0, \gamma=1$)
+
+Use `sts graph hazard` to plot estimated hazard rates for each group. 
