@@ -1,0 +1,35 @@
+---
+title: "Exercise 1 in Stata"
+author: "Thomas Lumley"
+date: "12 September 2017"
+output: html_document
+---
+
+In Stata, you start off by telling the computer about your time-to-event data: it can only know about one time-to-event variable at a time.  We want `time` as our time variable ($T$) and the event is death, indicated by `status==2`. 
+
+```
+import delimited pbc.csv
+stset time, failure(status==2)
+```
+
+Now we don't need to specify the variable in further commands.  To graph the Kaplan-Meier estimator we can say
+
+```
+sts graph
+```
+
+and to show quantiles of the survival function
+
+```
+stci
+stci p(25)
+```
+
+
+
+Now, try customising the axis labels and lines.   Look at the Kaplan-Meier estimator for subsets of the data, such as people with high bilirubin (`if bili>2`)
+
+
+Now, do the same things for the data in the file `colon.csv`.  There are two records for each person: time to recurrence of cancer and time, so you will want to make separate data sets for the subset of the records with `etype==1` (recurrence) and the subset with `etype==2` (deaths) and plot both curves.
+
+Can you get both curves on the same graph? 
