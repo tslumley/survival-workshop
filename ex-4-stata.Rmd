@@ -1,0 +1,59 @@
+---
+title: "Time scales"
+author: "Thomas Lumley"
+date: "9 September 2017"
+output: html_document
+---
+
+
+## Updated coefficients
+
+The file `pbcseq.csv` has data on a subset of the patients in the `pbc` dataset: the subset with `!is.na(trt)`. There are multiple records for each person, with measurements updated over time.
+
+`time1` is the start time for each interval
+
+`time2` is the end time
+
+`event==2` is a death, `event==1` is a transplant, `event==0` is nothing.
+
+The syntax for describing this to Stata is
+
+```
+stset time1, failure(event==2) id(id) enter(time1)
+```
+
+
+Fit your model from the last session to the new data and to the same subset of the old data.  Think about how the coefficients change, especially for `bili`, the variable most closely related to progression in this disease.
+
+## Left-truncation and hazard vs survival
+
+The file `fakelogrank2.csv` has a larger data set from the same artificial model with crossing hazard rate curves, but now has entry times as well.
+
+Fit a Cox model for the effect of `group` on the whole data set, with right censoring at `time`
+
+```
+stset time, failure(status)
+```
+
+Now fit a Cox model for the effect of `group`  to the subset with `entry<time`, left truncated at `entry`
+
+
+```
+stclear
+stset time if time>start, failure(status) entry(start)
+```
+
+
+Draw survival curves
+
+Think about what is happening. 
+
+## Choice of time scale.
+
+The file `nickel.csv` has data from a very old cohort of nickel refinery workers. The `ICD9` variable is the cause of death, with 0 for workers still alive at last follow-up. 
+
+Fit Cox models for the effect of exposure on survival using calendar time as the time scale (so, entry at `date_of_birth+first_followed` and exit at `date_of_birth+last_followed`)
+
+Repeat with age as the time scale, and with time since first employed as the time scale.  Also, repeat with the event variable being `ICD9>=160 & ICD9<170`, so that we're looking at time until cancer. 
+
+Think about the differences.

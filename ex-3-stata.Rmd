@@ -5,9 +5,11 @@ date: "9 September 2017"
 output: html_document
 ---
 
+In Stata, `-stcox-` fits Cox models. You specify just the predictor variables, since you've already specified the outcome variable with `-stset-`
+
 Load the `pbc` data and trying fitting Cox models to one variable at a time from `bili`, `protime`, `albumin`, `age`, `edema`, `stage`.
 
 
 Compare the partial likelihood for fits with `bili` and `log(bili)` and for `protime` and `log(protime)`
 
-Fit a model with a selection of variables not including `stage`. Compare fitted survival curves for people at the upper and lower quartiles of these variables. 
+Fit a model with a selection of variables not including `stage`. Compare fitted survival curves for people at the upper and lower quartiles of these variables (use `-stcurve-` after `-stcox-`)
