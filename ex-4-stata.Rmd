@@ -1,7 +1,7 @@
 ---
 title: "Time scales"
 author: "Thomas Lumley"
-date: "9 September 2017"
+date: "12 September 2017"
 output: html_document
 ---
 
