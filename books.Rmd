@@ -1,0 +1,12 @@
+---
+title: "Useful books"
+author: "Thomas Lumley"
+date: "9/11/2017"
+output: html_document
+---
+
+- *Survival Analysis: a self-learning text* by Kleinbaum and Klein. Low-maths, based on David Kleinbaum's courses aimed at doctors
+- *Regression Methods in Biostatistics* by Vittinghoff *et al.* A biostatistics textbook for fairly advanced epidemiologists. Uses Stata.
+- *Applied Survival Analysis: Regression modelling of time-to-event data* by Hosmer, Lemeshow, and May. This is popular and fairly straightforward. Personally, I don't like the avoidance of software. 
+- *Modeling Survival Data: Extending the Cox Model* by Therneau and Grambsch. By the author of the `survival` package, with a similar outlook to this course, but assuming a bit more maths. Uses R. Well, S-PLUS. 
+- *Counting Processes and Survival Analysis* by Fleming and Harrington. All the gory mathematical details. Assumes measure-theoretic probability. 
