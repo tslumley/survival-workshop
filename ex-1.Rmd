@@ -1,5 +1,5 @@
 ---
-title: "exercises-1.Rmd"
+title: "Kaplan-Meier estimator"
 author: "Thomas Lumley"
 date: "12 September 2017"
 output: html_document
