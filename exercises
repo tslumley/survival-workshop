@@ -5,6 +5,6 @@
 
 
 5: cgd data, 'retinopathy' data
-6: hypoxia, colon, 
+6: hypoxia, pbc 
 7: proportional-hazards checking in 'colon'. interval-censored time to AIDS
 8: no exercise
