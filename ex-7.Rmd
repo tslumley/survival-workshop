@@ -1,0 +1,16 @@
+---
+title: "Beyond proportional hazards"
+author: "Thomas Lumley"
+date: "10 September 2017"
+output: html_document
+---
+
+## Proportional hazards
+
+Examine the proportional hazards assumption for the colon cancer data, and for the time-varying `pbcseq` data set
+
+## Interval censoring
+
+The file `aids.csv` has data on time to AIDS in HIV-positive men early in the epidemic (before highly-effective treatment was available).  For each person, `ltime` is a time when they did not have AIDS and `rtime` is a time when they did.  You will need to replace zero values of `ltime` by `NA`.
+
+Fit models with `survreg()` looking at the effects of `dose`, `stage`, and low CD4 count. Compare lognormal and Weibull (the default) models. 

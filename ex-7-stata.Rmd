@@ -1,0 +1,30 @@
+---
+title: "Beyond proportional hazards"
+author: "Thomas Lumley"
+date: "10 September 2017"
+output: html_document
+---
+
+## Proportional hazards
+
+Examine the proportional hazards assumption for the colon cancer data, and for the time-varying `pbcseq` data set
+
+Use `estat phtest` after fitting the model for the formal test
+
+The useless graph is given by `-stphplot-`.  To draw the useful graph, use 
+
+```
+predict double rsch*, scaledsch
+```
+
+to create variables `rsch1`, `rsch2`,.. with the scaled Schoenfeld residuals for each covariate, then `graph twoway loess` or `graph twoway lpoly` to plot the residuals against time with a smoother through them. There isn't an easy way to get the confidence intervals that R gives.
+
+
+
+## Interval censoring
+
+The file `aids.csv` has data on time to AIDS in HIV-positive men early in the epidemic (before highly-effective treatment was available).  For each person, `ltime` is a time when they did not have AIDS and `rtime` is a time when they did.  You will need to replace zero values of `ltime` by `NA`.
+
+You'll need to install the `-intcens-` functions
+
+Fit models with `intcens` looking at the effects of `dose`, `stage`, and low CD4 count. Compare lognormal and Weibull models. 
