@@ -1,0 +1,29 @@
+---
+title: "Competing risks with Stata"
+author: "Thomas Lumley"
+date: "10 September 2017"
+output: html_document
+---
+
+The file `hypoxia.csv` has data on local and distance recurrence of cervical cancer in 109 women.  The main interest is in whether `ifp` and `hp5`, two measures of hypoxia (oxygen shortage) affect recurrence. We are interested only in the subset of women with initial complete response to treatment (`resp=="CR"`)
+
+
+- Fit a Cox model for time to recurrence of either sort (`dftime`, `dfcens`).
+-  Fit Cox models for time to local recurrence, censoring distant recurrence (`dftime`, `failtype==1`) and time to distant recurrence censoring local recurrence (`dftime`, `failtype==2`), adjusting for `tumsize` and `pelvicln`. What do these mean?
+- Why can't you meaningfully get survival curves from these models?
+
+
+Next, we want to look at the crude incidence.  Use `-stset-` to define the observation time and censoring time (not the failure type), and 
+
+```
+stcrreg ifp hp5 tumsize, compete(failtype==1)
+stcrreg ifp hp5 tumsize, compete(failtype==2)
+```
+
+The first line looks at the time to distant recurrence (2) with local recurrence (1) as a competing risk. The second looks at time to local recurrence with distant recurrence as a competing risk.
+
+You can use `-stcurve-` to graph estimates of the cumulative incidence, with the `-cif-` option
+
+
+
+Next, load the `pbc` dataset again and look at transplant (`status==1`) and death (`status==2`) as competing risks.
