@@ -1,0 +1,35 @@
+---
+title: "Recurrent/clustered events in Stata"
+author: "Thomas Lumley"
+date: "10 September 2017"
+output: html_document
+---
+
+## Recurrent events
+
+The file `cgd.csv` contains data on 128 people (mostly children) with chronic granulomatous disease, an immune disorder characterised by the lack of interferon-$\gamma$. They were randomised to injections of interferon-$\gamma$ or placebo, and the event of interest is serious infection.
+
+Use
+```
+stset tstop, entry(tstart) failure(status) id(id) exit(time .)
+```
+
+- Fit a Cox model to estimate the effect of treatment (`treat`) and whether it differs according to the genetic cause (`inherit`). Remember to include the `, cluster(id)` to get the correct standard errors. 
+- Repeat just using the first record for each person (these have `enum==1`). Compare the results
+- Is there evidence that the treatment effect is different after the first event?
+- Repeat, using time since the last infection rather than time on study as the time scale. Your `-stset-` command must *not* have an `id()` option, but the Cox model still needs `, cluster(id)`
+
+```
+stclear
+gen tgap = tstop-tstart
+stset tgap, failure(status) exit(time .)
+```
+
+
+## Diabetic retinopathy
+
+The file `retinopathy.csv` contains data on the treatment of diabetic retinopathy in 197 people with two eyes each. One eye was randomly chosen for laser treatment; the other was left untreated.
+
+- Fit a Cox model for the effect of treatment with the eyes as matched pairs using the option `, strata(id)`
+- Does the effect of treatment vary by the laser type (`laser`) or by the type of diabetes (`type`)? A simple interaction model gives a warning here (why?). Use, eg, `~trt+trt:laser` rather than `~trt*laser` to avoid the warning. 
+- Now look at the models considering the eyes just as clusters rather than matched sets. As in the previous example, you need to specify `, cluster(id)` to `-stcox-` and not to `-stset-`
