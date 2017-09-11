@@ -12,7 +12,7 @@ This hasn't been fully tested because I don't have easy access to SAS.
 ```
 ODS GRAPHICS ON;
 PROC LIFETEST data=pbc plots=survival;
-TIME time*status(0 1);
+TIME time*status(0, 1);
 RUN;
 ```
 
