@@ -1,0 +1,122 @@
+---
+title: "SAS"
+author: "Thomas Lumley"
+date: "9/11/2017"
+output: html_document
+---
+
+This hasn't been fully tested because I don't have easy access to SAS.
+
+## Kaplan-Meier estimator
+
+```
+ODS GRAPHICS ON;
+PROC LIFETEST data=pbc plots=survival;
+time status(0 1);
+RUN;
+```
+
+Divided up into high and normal(-ish) bilirubin
+
+```
+ODS GRAPHICS ON;
+PROC LIFETEST data=pbc plots=survival;
+TIME time*status(0,1);
+STRATA bili(2)
+RUN;
+```
+
+## Logrank test
+
+Define `chemo` as 1 if `trt` is `Lev+5FU`, 0 otherwise.
+
+
+```
+PROC LIFETEST data=colon plots=survival;
+TIME time*status(0,1);
+TEST chemo;
+RUN;
+```
+
+
+## Smoothed hazard rate
+```
+ODS GRAPHICS ON;
+PROC LIFETEST data=pbc plots=hazard;
+TIME time*status(0, 1);
+RUN;
+```
+
+
+## Cox model
+
+
+```
+PROC PHREG data=pbc;
+  MODEL time*status(0,1)= bili protime albumin;
+RUN;
+```
+
+```
+PROC PHREG data=pbc plots=survival;
+  MODEL time*status(0,1)= bili protime albumin;
+RUN;
+```
+
+## Time-varying covariates
+
+```
+PROC PHREG data=pbcseq;
+  MODEL (time1 time2)*status(0,1)= bili protime albumin;
+RUN;
+```
+
+## Recurrent events
+
+
+```
+PROC PHREG data=cgd COVS(AGGREGATE);
+  MODEL (tstart tstop)*status(0)= trt;
+  ID id;
+RUN;
+```
+
+## Stratification (matching)
+
+```
+PROC PHREG data=retinopathy;
+  MODEL futime*status(0)= trt;
+  STRATA id;
+RUN;
+```
+
+## Proportional hazards checking
+
+(in new enough versions of SAS)
+ 
+
+```
+PROC PHREG data=pbc ZPH(FIT=SPLINE);
+  MODEL (time)*status(0,1)= bili protime albumin;
+RUN;
+```
+
+## Cumulative incidence for competing risks
+
+(in new enough versions of SAS)
+
+```
+PROC PHREG data=hypoxia;
+  MODEL dftime*failtype(0)= ifp hp5 tumsize /eventcode=2;
+RUN;
+```
+
+to analyse `failtype=2` treating `failtype=0` as censored and any other values as competing risks.
+
+## Accelerated failure models
+
+```
+PROC LIFEREG data=aids;
+  MODEL (ltime rtime)=group/ DISTRIBUTION=WEIBULL;
+RUN;
+```
