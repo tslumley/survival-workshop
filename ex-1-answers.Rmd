@@ -1,0 +1,60 @@
+---
+title: "Kaplan-Meier estimator"
+author: "Thomas Lumley"
+date: "12 September 2017"
+output: html_document
+---
+
+First, read in the data
+
+```{r}
+pbc<-read.csv("pbc.csv")
+head(pbc)
+summary(pbc)
+```
+
+Load the `survival` package into your R session
+
+```{r}
+library(survival)
+```
+
+Now, fit the Kaplan-Meier estimator.  We package the failure time ($T$) and event status ($\Delta$) together into one thing with the `Surv` function.  Here, the event is `status==2`: a death, not a transplant. 
+
+```{r}
+pbc_surv <- survfit(Surv(time,status==2)~1, data=pbc)
+pbc_surv
+```
+
+And plot it
+
+```{r}
+plot(pbc_surv)
+```
+
+
+Now, try customising the axis labels and lines. Use the help pages: eg `?survfit`, `?plot.survfit`.  Look at the Kaplan-Meier estimator for subsets of the data, such as people with high bilirubin.  
+
+```{r}
+high_bili <- subset(pbc, bili>2)
+plot(survfit(Surv(time,status==2)~1,data=high_bili))
+```
+
+```{r}
+plot(survfit(Surv(time,status==2)~I(bili>2),data=pbc))
+plot(survfit(Surv(time,status==2)~I(bili>2),data=pbc),conf.int=TRUE,
+     col=c("goldenrod","purple"),xscale=365,yscale=100)
+```
+
+Now, do the same things for the data in the file `colon.csv`.  There are two records for each person: time to recurrence of cancer and time, so you will want to make separate data sets for the subset of the records with `etype==1` (recurrence) and the subset with `etype==2` (deaths) and plot both curves.
+
+```{r}
+colon <-read.csv("colon.csv")
+deaths<-subset(colon, etype==2)
+recur<-subset(colon,etype==1)
+plot(survfit(Surv(time,status)~1,data=deaths))
+lines(survfit(Surv(time,status)~1,data=recur),col="red")
+```
+Can you get both curves on the same graph? (see `?lines.survfit` for hints)
+
+

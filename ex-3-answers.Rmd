@@ -1,0 +1,66 @@
+---
+title: "Cox models"
+author: "Thomas Lumley"
+date: "9 September 2017"
+output: html_document
+---
+
+Load the `pbc` data and trying fitting Cox models to one variable at a time from `bili`, `protime`, `albumin`, `age`, `edema`, `stage`.
+
+```{r}
+library(survival)
+source("kmq.R")
+pbc<-read.csv("pbc.csv")
+
+coxph(Surv(time,status==2)~bili,data=pbc)
+coxph(Surv(time,status==2)~protime,data=pbc)
+coxph(Surv(time,status==2)~albumin,data=pbc)
+coxph(Surv(time,status==2)~age,data=pbc)
+coxph(Surv(time,status==2)~edema, data=pbc)
+coxph(Surv(time,status==2)~factor(stage),data=pbc)
+
+coxph(Surv(time,status==2)~log(bili),data=pbc)
+```
+
+Draw Kaplan-Meier contour plots for some of them.
+
+```{r}
+plot(time~bili,pch=ifelse(status==2,20,1),
+     col=ifelse(status==2, "blue","gray"),data=pbc)
+qq<-with(pbc, kmquantiles(time,status==2, bili,p=c(0.9,0.75,0.5)))
+lines(qq$x,qq$y["0.9",])
+lines(qq$x,qq$y["0.75",])
+lines(qq$x,qq$y["0.5",])
+```
+
+```{r}
+plot(time~log(bili),pch=ifelse(status==2,20,1),
+     col=ifelse(status==2, "blue","gray"),data=pbc)
+qq<-with(pbc, kmquantiles(time,status==2, log(bili),p=c(0.9,0.75,0.5)))
+lines(qq$x,qq$y["0.9",])
+lines(qq$x,qq$y["0.75",])
+lines(qq$x,qq$y["0.5",])
+```
+
+```{r}
+plot(time~protime,pch=ifelse(status==2,20,1),
+     col=ifelse(status==2, "blue","gray"),data=pbc)
+qq<-with(pbc[!is.na(pbc$protime),], kmquantiles(time,status==2, protime,p=c(0.9,0.75,0.5)))
+lines(qq$x,qq$y["0.9",])
+lines(qq$x,qq$y["0.75",])
+lines(qq$x,qq$y["0.5",])
+```
+
+Compare the partial likelihood for fits with `bili` and `log(bili)` and for `protime` and `log(protime)`
+
+Fit a model with a selection of variables not including `stage`. Compare fitted survival curves for people at the upper and lower quartiles of these variables. 
+
+```{r}
+model<-coxph(Surv(time,status==2)~log(bili)+protime+albumin,data=pbc)
+covs<-data.frame(bili=quantile(pbc$bili,c(0.25,0.75)),
+                protime=quantile(pbc$protime,c(0.25,0.75),na.rm=TRUE),
+                albumin=quantile(pbc$albumin,c(0.75,0.25))
+                )
+plot(survfit(model,
+             newdata=covs))
+```
