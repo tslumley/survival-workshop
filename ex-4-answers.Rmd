@@ -1,0 +1,98 @@
+---
+title: "Time scales"
+author: "Thomas Lumley"
+date: "9 September 2017"
+output: html_document
+---
+
+
+## Updated coefficients
+
+The file `pbcseq.csv` has data on a subset of the patients in the `pbc` dataset: the subset with `!is.na(trt)`. There are multiple records for each person, with measurements updated over time.
+
+`time1` is the start time for each interval
+
+`time2` is the end time
+
+`event==2` is a death, `event==1` is a transplant, `event==0` is nothing.
+
+
+Fit your model from the last session to the new data and to the same subset of the old data.  Think about how the coefficients change, especially for `bili`, the variable most closely related to progression in this disease.
+
+```{r}
+library(survival)
+pbcseq <-read.csv("pbcseq.csv")
+coxph(Surv(time1,time2,event==2)~log(bili)+protime+albumin,data=pbcseq)
+pbc<-read.csv("pbc.csv")
+coxph(Surv(time,status==2)~log(bili)+protime+albumin,data=subset(pbc,!is.na(trt)))
+```
+
+## Left-truncation and hazard vs survival
+
+The file `fakelogrank2.csv` has a larger data set from the same artificial model with crossing hazard rate curves, but now has entry times as well.
+
+Fit a Cox model for the effect of `group` on the whole data set, with right censoring at `time`
+
+```{r}
+fake<-read.csv("fakelogrank2.csv")
+head(fake)
+coxph(Surv(time,status)~group,data=fake)
+```
+
+Now fit a Cox model for the effect of `group`  to the subset with `start<time`, left truncated at `start`
+
+```{r}
+coxph(Surv(start,time,status)~group,data=subset(fake,start<time))
+```
+
+
+Draw survival curves
+
+```{r}
+plot(survfit(Surv(time,status)~group,data=fake),xlim=c(0,10))
+plot(survfit(Surv(start,time,status)~group,data=subset(fake,start<time)),xlim=c(0,10))
+```
+
+Think about what is happening. 
+
+```{r}
+m0<-coxph(Surv(time,status)~group,data=fake)
+plot(survfit(m0,newdata=data.frame(group=0:1)),col=c("black","red"))
+m1<-coxph(Surv(start,time,status)~group,data=subset(fake,start<time))
+plot(survfit(m1,newdata=data.frame(group=0:1)),col=c("black","red"))
+```
+
+## Choice of time scale.
+
+The file `nickel.csv` has data from a very old cohort of nickel refinery workers. The `ICD9` variable is the cause of death, with 0 for workers still alive at last follow-up. 
+
+```{r}
+nickel <-read.csv("nickel.csv")
+head(nickel)
+```
+
+Fit Cox models for the effect of exposure on survival using calendar time as the time scale (so, entry at `date_of_birth+first_followed` and exit at `date_of_birth+last_followed`)
+
+```{r}
+coxph(Surv(date_of_birth+first_followed,date_of_birth+last_followed,ICD9>0)~exposure,data=nickel)
+```
+
+
+Repeat with age as the time scale, and with time since first employed as the time scale. 
+
+```{r}
+coxph(Surv(first_followed,last_followed,ICD9>0)~exposure,data=nickel)
+coxph(Surv(first_followed-first_employed,last_followed-first_employed,ICD9>0)~exposure,data=nickel)
+```
+
+
+Also, repeat with the event variable being `ICD9>=160 & ICD9<170`, so that we're looking at time until cancer. 
+
+```{r}
+nickel$cancer<-with(nickel, ICD9>=160 & ICD9<170)
+coxph(Surv(date_of_birth+first_followed,date_of_birth+last_followed,cancer)~exposure,data=nickel)
+coxph(Surv(first_followed,last_followed,cancer)~exposure,data=nickel)
+coxph(Surv(first_followed-first_employed,last_followed-first_employed,cancer)~exposure,data=nickel)
+```
+
+Think about the differences.
