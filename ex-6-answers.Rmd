@@ -1,0 +1,52 @@
+---
+title: "Competing risks"
+author: "Thomas Lumley"
+date: "10 September 2017"
+output: html_document
+---
+
+The file `hypoxia.csv` has data on local and distance recurrence of cervical cancer in 109 women.  The main interest is in whether `ifp` and `hp5`, two measures of hypoxia (oxygen shortage) affect recurrence. We are interested only in the subset of women with initial complete response to treatment (`resp=="CR"`)
+
+```{r}
+hypoxia <- read.csv("hypoxia.csv")
+hypoxia<-subset(hypoxia, resp=="CR")
+```
+
+
+- Fit a Cox model for time to recurrence of either sort (`dftime`, `dfcens`), adjusting for `tumsize` and `pelvicln`. 
+-  Fit Cox models for time to local recurrence, censoring distant recurrence (`dftime`, `failtype==1`) and time to distant recurrence censoring local recurrence (`dftime`, `failtype==2`), adjusting for `tumsize` and `pelvicln`. What do these mean?
+- Why can't you meaningfully get survival curves from these models?
+
+```{r}
+library(survival)
+coxph(Surv(dftime,dfcens)~ifp+hp5+pelvicln+tumsize, data=hypoxia)
+anova(coxph(Surv(dftime,dfcens)~ifp+hp5+pelvicln+tumsize, data=hypoxia))
+coxph(Surv(dftime,failtype==1)~ifp+hp5+pelvicln+tumsize, data=hypoxia)
+coxph(Surv(dftime,failtype==2)~ifp+hp5+pelvicln+tumsize, data=hypoxia)
+```
+
+
+Now, install the `cmprsk` package and load it into your session.
+
+First, look at the crude incidence curves for the two failure types overall, and by whether `ifp>20`
+```{r}
+library("cmprsk")
+with(hypoxia, cuminc(dftime,failtype))
+with(hypoxia, plot(cuminc(dftime,failtype)))
+with(hypoxia, cuminc(dftime,failtype, ifp>20))
+```
+
+Now, we can do regression modelling
+```{r}
+with(hypoxia,crr(dftime,failtype,cbind(ifp,hp5,tumsize)))
+```
+
+Next, load the `pbc` dataset again and look at transplant (`status==1`) and death (`status==2`) as competing risks.
+
+```{r}
+pbc<-read.csv("pbc.csv")
+with(pbc, plot(cuminc(time/365,status)))
+with(pbc, plot(cuminc(time/365,status, bili>2)))
+with(pbc,crr(time/365,status,cbind(log(bili),protime,albumin),failcode=1))
+with(pbc,crr(time/365,status,cbind(log(bili),protime,albumin),failcode=2))
+```
